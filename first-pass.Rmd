@@ -2,17 +2,21 @@
 title: 'Assignment 1: First Pass'
 author: '@friendimaginary'
 date: "May 7, 2016"
-output: html_document
+output: word_document
 ---
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-
 ```
+
+
 
 ## Introduction
 
 This assignment makes use of data from a personal activity monitoring device. The data consists of two months of data from an anonymous individual collected during the months of October and November, 2012 and include the number of steps taken in 5 minute intervals each day.
+
+
 
 ## Data
 
@@ -28,6 +32,8 @@ The dataset is stored in a comma-separated-value (CSV) file and there
 are a total of 17,568 observations in this
 dataset.
 
+
+
 ## Assignment
 
 This assigment must be completed as a single R Markdown document that can be processed by knitr and transformed into valid HTML. This is that document. The default option for each code chunk is `echo = TRUE` so that these will always be visible. This makes peer review possible.
@@ -35,10 +41,10 @@ This assigment must be completed as a single R Markdown document that can be pro
 First, we must fork/clone the [GitHub repository created for this assignment](https://github.com/rdpeng/RepData_PeerAssessment1). This will be our working directory from this point forward. The GitHub repository also contains the dataset for the assignment, so it is not necessary to download the data separately. In a bash terminal:
 
 ```{bash git-clone, eval=FALSE }
-
 git clone https://github.com/rdpeng/RepData_PeerAssessment1
-
 ```
+
+
 
 ### Loading and preprocessing the data
 
@@ -53,6 +59,7 @@ head(activity)
 ```
 
 
+
 #### Part 2. Process/transform the data (if necessary) into a format suitable for your analysis
 
 ```{r "aggregate total steps per day" }
@@ -62,10 +69,14 @@ stepsPerDay$steps <- as.numeric( stepsPerDay$steps )
 
 ```
 
+
+
 ### What is mean total number of steps taken per day?
 
 For this part of the assignment, you can ignore the missing values in
 the dataset.
+
+
 
 #### Part 1. Make a histogram of the total number of steps taken each day
 
@@ -76,6 +87,8 @@ require( ggplot2 )
 qplot( stepsPerDay$steps , geom = "histogram" , bins = 30 , xlab = "Steps per Day" )
 
 ```
+
+
 
 #### Part 2. Calculate and report the **mean** and **median** total number of steps taken per day
 
@@ -88,7 +101,11 @@ paste( "The Mean is " , round(meanSteps,2) , " steps; and the median is " , medi
 
 ```
 
+
+
 ### What is the average daily activity pattern?
+
+
 
 #### Part 1. Make a time series plot (i.e. `type = "l"`) of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
 
@@ -114,6 +131,8 @@ qplot(
 
 ```
 
+
+
 #### Part 2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 
 ```{r Highest average steps per interval}
@@ -124,10 +143,13 @@ print( paste( "The highest average number of steps is " , round(most$steps,2) ,
 ```
 
 
+
 ### Imputing missing values
 
 There are a number of days/intervals where there are missing values (coded as 
 `NA`). The presence of missing days may introduce bias into some calculations or summaries of the data.
+
+
 
 #### Part 1. Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with `NA`s)
 
@@ -140,6 +162,7 @@ paste( "The total number of rows containing missing data is " , missing , "." ,
 ```
 
 
+
 #### Part 2. Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. 
 
 To fill in missing values, one could use either the mean/median for that day, or 
@@ -150,6 +173,7 @@ average daily steps. This approach should keep replacement values better aligned
 to both the day and the interval.
 
 Since this approach relies on the previously computed stepsPerDay, that must first be corrected to address missing values for entire days. Our approach in this case is replace the missing value with the average of the preceding and following days, dropping further NAs in this calculation.
+
 
 
 #### Part 3. Create a new dataset that is equal to the original dataset but with the missing data filled in.
@@ -185,6 +209,7 @@ head(activity.corrected)
 ```
 
 
+
 #### Part 4. Make a histogram of the total number of steps taken each day and Calculate and report the **mean** and **median** total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
 
 ```{r "Histogram of corrected daily steps"}
@@ -202,24 +227,10 @@ comparison
 
 ```
 
+
+
 Replacing missing values with a simple average can artificially inflate measurements. By comparing activity levels in surounding days to daily averages, and then applying that scale to interval averages, I believe I more accuratety represent the missing data. A missing day between two low-activity days is likely to be another low activity day, and my method avoids introducing an unlikely spike in the newly imputed data.
 
-
-.  
-.  
-.  
-.  
-
-# AS ABOVE NOT YET BELOW
-
-## Assignment
-
-For the plotting aspects of this assignment, feel free to use any
-plotting system in R (i.e., base, lattice, ggplot2)
-
-The assignment submission will consist of
-the URL to your GitHub repository and the SHA-1 commit ID for your
-repository state.
 
 
 ### Are there differences in activity patterns between weekdays and weekends?
@@ -227,49 +238,56 @@ repository state.
 For this part the `weekdays()` function may be of some help here. Use
 the dataset with the filled-in missing values for this part.
 
-1. Create a new factor variable in the dataset with two levels -- "weekday" and "weekend" indicating whether a given date is a weekday or weekend day.
-
-1. Make a panel plot containing a time series plot (i.e. `type = "l"`) of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). The plot should look something like the following, which was created using **simulated data**:
-
-![Sample panel plot](instructions_fig/sample_panelplot.png) 
 
 
-**Your plot will look different from the one above** because you will
-be using the activity monitor data. Note that the above plot was made
-using the lattice system but you can make the same version of the plot
-using any plotting system you choose.
+#### Part 1. Create a new factor variable in the dataset with two levels -- "weekday" and "weekend" indicating whether a given date is a weekday or weekend day.
+
+```{r Factoring weekdays v. weekends}
+
+weekend.days <- c("Saturday","Sunday")
+weekday.days <- c("Monday","Tuesday","Wednesday","Thursday","Friday")
+for( i in 1:nrow(activity.corrected) ) {
+    day.of.week <- weekdays( as.Date( activity.corrected[i,'date']))
+    if( day.of.week %in% weekday.days == TRUE ) {
+        activity.corrected[i, 'weekend'] <- 'weekday'
+    }
+    if( day.of.week %in% weekend.days == TRUE ) {
+        activity.corrected[i, 'weekend'] <- 'weekend'
+    }
+    
+}
+activity.corrected$weekend <- as.factor(activity.corrected$weekend)
 
 
-## Submitting the Assignment
+```
 
-To submit the assignment:
 
-1. Commit your completed `PA1_template.Rmd` file to the `master` branch of your git repository (you should already be on the `master` branch unless you created new ones)
 
-2. Commit your `PA1_template.md` and `PA1_template.html` files produced by processing your R markdown file with the `knit2html()` function in R (from the **knitr** package)
+#### Part 2. Make a panel plot containing a time series plot (i.e. `type = "l"`) of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). 
 
-3. If your document has figures included (it should) then they should have been placed in the `figure/` directory by default (unless you overrode the default). Add and commit the `figure/` directory to your git repository.
+```{r Panel plot weekend facet}
 
-4. Push your `master` branch to GitHub.
+stepsPerInterval.corrected <- aggregate(steps ~ interval + weekend ,
+                              data = activity.corrected ,
+                              FUN = mean ,
+                              na.rm = TRUE)
 
-5. Submit the URL to your GitHub repository for this assignment on the course web site.
+qplot(
+    interval ,
+    steps ,
+    data = stepsPerInterval.corrected ,
+    geom = "line" ,
+    xlab = "5-minute interval" ,
+    ylab = "Average steps" ,
+    main = "Weekend v. weekday activity patterns"
+) + facet_grid( weekend ~ .)
 
-In addition to submitting the URL for your GitHub repository, you will
-need to submit the 40 character SHA-1 hash (as string of numbers from
-0-9 and letters from a-f) that identifies the repository commit that
-contains the version of the files you want to submit. You can do this
-in GitHub by doing the following:
+```
 
-1. Go into your GitHub repository web page for this assignment
 
-2. Click on the "?? commits" link where ?? is the number of commits you have in the repository. For example, if you made a total of 10 commits to this repository, the link should say "10 commits".
-
-3. You will see a list of commits that you have made to this repository. The most recent commit is at the very top. If this represents the version of the files you want to submit, then just click the "copy to clipboard" button on the right hand side that should appear when you hover over the SHA-1 hash. Paste this SHA-1 hash into the course web site when you submit your assignment. If you don't want to use the most recent commit, then go down and find the commit you want and copy the SHA-1 hash.
-
-A valid submission will look something like (this is just an **example**!)
 
 ```r
-https://github.com/rdpeng/RepData_PeerAssessment1
+https://github.com/friendimaginary/RepData_PeerAssessment1
 
-7c376cc5447f11537f8740af8e07d6facc3d9645
+
 ```
