@@ -161,18 +161,42 @@ for( i in 1:length(just.steps) ) {
 }
 stepsPerDay.corrected <- cbind( all.days , just.steps )
 avgStepsPerDay.corrected <- mean( just.steps )
+activity.corrected <- activity
 
+for( i in 1:nrow(activity.corrected) ) {
+    day <- activity.corrected[ i , 'date' ]
+    steps <- stepsPerDay.corrected[ stepsPerDay.corrected$date == day , "just.steps" ]
+    ratio <- steps / avgStepsPerDay.corrected
+    interval.steps <- stepsPerInterval[ stepsPerInterval$interval == 
+                                        activity.corrected$interval[i], 'steps']
+    if( is.na(activity.corrected[ i , 'steps']) == TRUE ) {
+        activity.corrected[i,'steps'] <- ratio * interval.steps
+    }
+}
 
-
-
+head(activity.corrected)
 
 ```
 
+
 #### Part 4. Make a histogram of the total number of steps taken each day and Calculate and report the **mean** and **median** total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
 
+```{r "Histogram of corrected daily steps"}
 
+qplot( stepsPerDay.corrected$just.steps , geom = "histogram" , bins = 30 , xlab = "Corrected Steps per Day" )
 
+meanCorrectedSteps <- mean( stepsPerDay.corrected$just.steps )
+medianCorrectedSteps <- median( stepsPerDay.corrected$just.steps )
+paste( "The Mean is " , meanCorrectedSteps , " steps; and the median is " , medianCorrectedSteps , "." , sep = "" )
 
+comparison <- cbind( "mean" = c( meanCorrectedSteps , meanSteps ) ,"median" = 
+                         c( medianCorrectedSteps , medianSteps))
+row.names(comparison) <- c( "corrected" , "uncorrected")
+comparison
+
+```
+
+Replacing missing values with a simple average can artificially inflate measurements. By comparing activity levels in surounding days to daily averages, and then applying that scale to interval averages, I believe I more accuratety represent the missing data. A missing day between two low-activity days is likely to be another low activity day, and my method avoids introducing an unlikely spike in the newly imputed data.
 
 
 .  

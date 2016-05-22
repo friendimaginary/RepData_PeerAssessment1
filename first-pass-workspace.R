@@ -118,15 +118,13 @@ activity.corrected <- activity
 
 for( i in 1:nrow(activity.corrected) ) {
     day <- activity.corrected[ i , 'date' ]
-    steps <- stepsPerDay.corrected[ stepsPerDay.corrected$date == day , 
-                                    "just.steps" ]
+    steps <- stepsPerDay.corrected[ stepsPerDay.corrected$date == day , "just.steps" ]
     ratio <- steps / avgStepsPerDay.corrected
-    
+    interval.steps <- stepsPerInterval[ stepsPerInterval$interval == 
+                                        activity.corrected$interval[i], 'steps']
     if( is.na(activity.corrected[ i , 'steps']) == TRUE ) {
-        activity.corrected[i,'steps'] <- ratio * 
+        activity.corrected[i,'steps'] <- ratio * interval.steps
     }
-    
-    
 }
 
 
