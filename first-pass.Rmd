@@ -34,13 +34,13 @@ This assigment must be completed as a single R Markdown document that can be pro
 
 First, we must fork/clone the [GitHub repository created for this assignment](https://github.com/rdpeng/RepData_PeerAssessment1). This will be our working directory from this point forward. The GitHub repository also contains the dataset for the assignment, so it is not necessary to download the data separately. In a bash terminal:
 
-```{bash eval=FALSE }
+```{bash git-clone, eval=FALSE }
 git clone https://github.com/rdpeng/RepData_PeerAssessment1
 ```
 
 ### Loading and preprocessing the data
 
-Step 1. Load the data (i.e. `read.csv()`):
+#### Part 1. Load the data (i.e. `read.csv()`):
 
 ```{r "load the data" }
 
@@ -51,7 +51,7 @@ head(activity)
 ```
 
 
-Step 2. Process/transform the data (if necessary) into a format suitable for your analysis
+#### Part 2. Process/transform the data (if necessary) into a format suitable for your analysis
 
 ```{r "aggregate total steps per day" }
 
@@ -65,27 +65,110 @@ stepsPerDay$steps <- as.numeric( stepsPerDay$steps )
 For this part of the assignment, you can ignore the missing values in
 the dataset.
 
-Step 1. Make a histogram of the total number of steps taken each day
+#### Part 1. Make a histogram of the total number of steps taken each day
 
 ```{r "Histogram of daily steps"}
 
-qplot( stepsPerDay$steps , geom = "histogram" , bins = 30 )
+qplot( stepsPerDay$steps , geom = "histogram" , bins = 30 , xlab = "Steps per Day" )
 
 ```
 
-2. Calculate and report the **mean** and **median** total number of steps taken per day
+#### Part 2. Calculate and report the **mean** and **median** total number of steps taken per day
 
 ```{r "Mean and median steps per day" }
 
 meanSteps <- mean( stepsPerDay$steps )
 medianSteps <- median( stepsPerDay$steps )
-paste( "Mean is" , meanSteps , ";" , "median is" , medianSteps , sep = " " )
+paste( "The Mean is " , meanSteps , " steps; and the median is " , medianSteps , "." , sep = "" )
+
+```
+
+### What is the average daily activity pattern?
+
+#### Part 1. Make a time series plot (i.e. `type = "l"`) of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
+
+```{r "Average daily steps, 5-minute time series"}
+
+stepsPerInterval <- aggregate(steps ~ interval ,
+                              data = activity ,
+                              FUN = mean ,
+                              na.rm = TRUE)
+#stepsPerInterval$inverval <- as.factor(stepsPerInterval$interval)
+
+qplot(
+    interval ,
+    steps ,
+    data = stepsPerInterval ,
+    geom = "line" ,
+    xlab = "5-minute interval" ,
+    ylab = "Average steps"
+) + geom_vline( xintercept = 835 , color = "red" ) 
+
+
+```
+
+#### Part 2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
+
+```{r Highest average steps per interval}
+
+most <- stepsPerInterval[ which.max(stepsPerInterval$steps) , ]
+print( paste( "The highest average number of steps is " , eval(most$steps) , 
+       ", occuring at interval " , eval(most$interval) , "." , sep = ""))
 
 ```
 
 
+### Imputing missing values
+
+There are a number of days/intervals where there are missing values (coded as 
+`NA`). The presence of missing days may introduce bias into some calculations or summaries of the data.
+
+#### Part 1. Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with `NA`s)
+
+```{r Number of NAs}
+
+missing <- sum( is.na( activity$steps ))
+paste( "The total number of rows containing missing data is " , missing , "." ,
+       sep = "" )
+
+```
 
 
+#### Part 2. Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. 
+
+To fill in missing values, one could use either the mean/median for that day, or 
+the mean for that 5-minute interval. A slightly more complicated option, is to 
+combine those two approaches. I will replace a missing value with the average 
+value for its interval multiplied by the ratio of steps taken on that day to 
+average daily steps. This approach should keep replacement values better aligned
+to both the day and the interval.
+
+Since this approach relies on the previously computed stepsPerDay, that must first be corrected to address missing values for entire days. Our approach in this case is replace the missing value with the average of the preceding and following days, dropping further NAs in this calculation.
+
+
+#### Part 3. Create a new dataset that is equal to the original dataset but with the missing data filled in.
+
+```{r New Dataset}
+
+all.days <- data.frame( "date" = unique( activity$date ))
+all.days.steps <- merge( all.days , stepsPerDay , all = TRUE)
+just.steps <- all.days.steps$steps
+
+for( i in 1:length(just.steps) ) {
+    if( is.na( just.steps[i]) == T ) { 
+        just.steps[i] <- mean( c( just.steps[i-1] , just.steps[i+1]) , 
+                               na.rm = T )}
+}
+stepsPerDay.corrected <- cbind( all.days , just.steps )
+avgStepsPerDay.corrected <- mean( just.steps )
+
+
+
+
+
+```
+
+#### Part 4. Make a histogram of the total number of steps taken each day and Calculate and report the **mean** and **median** total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
 
 
 
@@ -107,34 +190,6 @@ plotting system in R (i.e., base, lattice, ggplot2)
 The assignment submission will consist of
 the URL to your GitHub repository and the SHA-1 commit ID for your
 repository state.
-
-
-
-
-
-
-
-
-### What is the average daily activity pattern?
-
-1. Make a time series plot (i.e. `type = "l"`) of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
-
-2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
-
-
-### Imputing missing values
-
-Note that there are a number of days/intervals where there are missing
-values (coded as `NA`). The presence of missing days may introduce
-bias into some calculations or summaries of the data.
-
-1. Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with `NA`s)
-
-2. Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.
-
-3. Create a new dataset that is equal to the original dataset but with the missing data filled in.
-
-4. Make a histogram of the total number of steps taken each day and Calculate and report the **mean** and **median** total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
 
 
 ### Are there differences in activity patterns between weekdays and weekends?
