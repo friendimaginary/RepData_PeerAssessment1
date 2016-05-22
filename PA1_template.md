@@ -1,16 +1,9 @@
----
-title: 'Assignment 1: First Pass'
-author: '@friendimaginary'
-date: "May 7, 2016"
-output: 
-  html_document: 
-    keep_md: yes
----
+# Assignment 1: First Pass
+@friendimaginary  
+May 7, 2016  
 
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+
 
 
 
@@ -42,7 +35,8 @@ This assignment must be completed as a single R Markdown document that can be pr
 
 First, we must fork/clone the [GitHub repository created for this assignment](https://github.com/rdpeng/RepData_PeerAssessment1). This will be our working directory from this point forward. The GitHub repository also contains the dataset for the assignment, so it is not necessary to download the data separately. In a bash terminal:
 
-```{bash git-clone, eval=FALSE }
+
+```bash
 git clone https://github.com/rdpeng/RepData_PeerAssessment1
 ```
 
@@ -52,23 +46,31 @@ git clone https://github.com/rdpeng/RepData_PeerAssessment1
 
 #### Part 1. Load the data (i.e., `read.csv()`):
 
-```{r "load the data" }
 
+```r
 unzip( "activity.zip" )
 activity <- read.csv( "activity.csv" )
 head(activity)
+```
 
+```
+##   steps       date interval
+## 1    NA 2012-10-01        0
+## 2    NA 2012-10-01        5
+## 3    NA 2012-10-01       10
+## 4    NA 2012-10-01       15
+## 5    NA 2012-10-01       20
+## 6    NA 2012-10-01       25
 ```
 
 
 
 #### Part 2. Process/transform the data (if necessary) into a format suitable for your analysis
 
-```{r "aggregate total steps per day" }
 
+```r
 stepsPerDay <- aggregate( steps ~ date , data = activity , FUN = sum , na.rm = TRUE )
 stepsPerDay$steps <- as.numeric( stepsPerDay$steps )
-
 ```
 
 
@@ -82,25 +84,36 @@ the dataset.
 
 #### Part 1. Make a histogram of the total number of steps taken each day
 
-```{r "Histogram of daily steps"}
 
+```r
 if( "ggplot2" %in% installed.packages() == FALSE){ install.packages("ggplot2", dependencies = TRUE)}
 require( ggplot2 )
-qplot( stepsPerDay$steps , geom = "histogram" , bins = 30 , xlab = "Steps per Day" )
+```
 
 ```
+## Loading required package: ggplot2
+```
+
+```r
+qplot( stepsPerDay$steps , geom = "histogram" , bins = 30 , xlab = "Steps per Day" )
+```
+
+![](PA1_template_files/figure-html/Histogram of daily steps-1.png)<!-- -->
 
 
 
 #### Part 2. Calculate and report the **mean** and **median** total number of steps taken per day
 
-```{r "Mean and median steps per day" }
 
+```r
 meanSteps <- mean( stepsPerDay$steps )
 medianSteps <- median( stepsPerDay$steps )
 paste( "The Mean is " , round(meanSteps,2) , " steps; and the median is " , medianSteps , 
        "." , sep = "" )
+```
 
+```
+## [1] "The Mean is 10766.19 steps; and the median is 10765."
 ```
 
 
@@ -111,8 +124,8 @@ paste( "The Mean is " , round(meanSteps,2) , " steps; and the median is " , medi
 
 #### Part 1. Make a time series plot (i.e. `type = "l"`) of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
 
-```{r "Average daily steps, 5-minute time series"}
 
+```r
 stepsPerInterval <- aggregate(steps ~ interval ,
                               data = activity ,
                               FUN = mean ,
@@ -129,19 +142,22 @@ qplot(
     main = "Average daily activity pattern"
 ) + geom_vline( xintercept = 835 , color = "red" ) +
     annotate( "text" , x = 1450 , y = 187.5 , label = tag , col = "red" )
-
-
 ```
+
+![](PA1_template_files/figure-html/Average daily steps, 5-minute time series-1.png)<!-- -->
 
 
 
 #### Part 2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 
-```{r Highest average steps per interval}
 
+```r
 print( paste( "The highest average number of steps is " , round(most$steps,2) , 
        ", occurring at interval " , eval(most$interval) , "." , sep = ""))
+```
 
+```
+## [1] "The highest average number of steps is 206.17, occurring at interval 835."
 ```
 
 
@@ -155,12 +171,15 @@ There are a number of days/intervals where there are missing values (coded as
 
 #### Part 1. Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with `NA`s)
 
-```{r Number of NAs}
 
+```r
 missing <- sum( is.na( activity$steps ))
 paste( "The total number of rows containing missing data is " , missing , "." ,
        sep = "" )
+```
 
+```
+## [1] "The total number of rows containing missing data is 2304."
 ```
 
 
@@ -180,8 +199,8 @@ Since this approach relies on the previously computed stepsPerDay, that must fir
 
 #### Part 3. Create a new dataset that is equal to the original dataset but with the missing data filled in.
 
-```{r New Dataset}
 
+```r
 all.days <- data.frame( "date" = unique( activity$date ))
 all.days.steps <- merge( all.days , stepsPerDay , all = TRUE)
 just.steps <- all.days.steps$steps
@@ -207,26 +226,50 @@ for( i in 1:nrow(activity.corrected) ) {
 }
 
 head(activity.corrected)
+```
 
+```
+##          steps       date interval
+## 1 0.0210129771 2012-10-01        0
+## 2 0.0041564131 2012-10-01        5
+## 3 0.0016163829 2012-10-01       10
+## 4 0.0018472947 2012-10-01       15
+## 5 0.0009236473 2012-10-01       20
+## 6 0.0256312138 2012-10-01       25
 ```
 
 
 
 #### Part 4. Make a histogram of the total number of steps taken each day and Calculate and report the **mean** and **median** total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
 
-```{r "Histogram of corrected daily steps"}
 
+```r
 qplot( stepsPerDay.corrected$just.steps , geom = "histogram" , bins = 30 , xlab = "Corrected Steps per Day" )
+```
 
+![](PA1_template_files/figure-html/Histogram of corrected daily steps-1.png)<!-- -->
+
+```r
 meanCorrectedSteps <- mean( stepsPerDay.corrected$just.steps )
 medianCorrectedSteps <- median( stepsPerDay.corrected$just.steps )
 paste( "The Mean is " , meanCorrectedSteps , " steps; and the median is " , medianCorrectedSteps , "." , sep = "" )
+```
 
+```
+## [1] "The Mean is 10295.5245901639 steps; and the median is 10571."
+```
+
+```r
 comparison <- cbind( "mean" = c( meanCorrectedSteps , meanSteps ) ,"median" = 
                          c( medianCorrectedSteps , medianSteps))
 row.names(comparison) <- c( "corrected" , "uncorrected")
 comparison
+```
 
+```
+##                 mean median
+## corrected   10295.52  10571
+## uncorrected 10766.19  10765
 ```
 
 
@@ -244,8 +287,8 @@ the dataset with the filled-in missing values for this part.
 
 #### Part 1. Create a new factor variable in the dataset with two levels -- "weekday" and "weekend" indicating whether a given date is a weekday or weekend day.
 
-```{r Factoring weekdays v. weekends}
 
+```r
 weekend.days <- c("Saturday","Sunday")
 weekday.days <- c("Monday","Tuesday","Wednesday","Thursday","Friday")
 for( i in 1:nrow(activity.corrected) ) {
@@ -259,16 +302,14 @@ for( i in 1:nrow(activity.corrected) ) {
     
 }
 activity.corrected$weekend <- as.factor(activity.corrected$weekend)
-
-
 ```
 
 
 
 #### Part 2. Make a panel plot containing a time series plot (i.e., `type = "l"`) of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). 
 
-```{r Panel plot weekend facet}
 
+```r
 stepsPerInterval.corrected <- aggregate(steps ~ interval + weekend ,
                               data = activity.corrected ,
                               FUN = mean ,
@@ -283,8 +324,9 @@ qplot(
     ylab = "Average steps" ,
     main = "Weekend v. weekday activity patterns"
 ) + facet_grid( weekend ~ .)
-
 ```
+
+![](PA1_template_files/figure-html/Panel plot weekend facet-1.png)<!-- -->
 
 
 
@@ -292,8 +334,29 @@ qplot(
 https://github.com/friendimaginary/RepData_PeerAssessment1
 ```
 
-```{r Session Info}
 
+```r
 sessionInfo()
+```
 
+```
+## R version 3.3.0 (2016-05-03)
+## Platform: x86_64-apple-darwin15.4.0 (64-bit)
+## Running under: OS X 10.11.5 (El Capitan)
+## 
+## locale:
+## [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+## 
+## attached base packages:
+## [1] stats     graphics  grDevices utils     datasets  methods   base     
+## 
+## other attached packages:
+## [1] ggplot2_2.1.0
+## 
+## loaded via a namespace (and not attached):
+##  [1] Rcpp_0.12.5      digest_0.6.9     plyr_1.8.3       grid_3.3.0      
+##  [5] gtable_0.2.0     formatR_1.4      magrittr_1.5     evaluate_0.9    
+##  [9] scales_0.4.0     stringi_1.0-1    reshape2_1.4.1   rmarkdown_0.9.6 
+## [13] labeling_0.3     tools_3.3.0      stringr_1.0.0    munsell_0.4.3   
+## [17] yaml_2.1.13      colorspace_1.2-6 htmltools_0.3.5  knitr_1.13
 ```
