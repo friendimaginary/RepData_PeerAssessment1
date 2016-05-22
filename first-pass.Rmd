@@ -7,7 +7,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-require( ggplot2 )
+
 ```
 
 ## Introduction
@@ -35,7 +35,9 @@ This assigment must be completed as a single R Markdown document that can be pro
 First, we must fork/clone the [GitHub repository created for this assignment](https://github.com/rdpeng/RepData_PeerAssessment1). This will be our working directory from this point forward. The GitHub repository also contains the dataset for the assignment, so it is not necessary to download the data separately. In a bash terminal:
 
 ```{bash git-clone, eval=FALSE }
+
 git clone https://github.com/rdpeng/RepData_PeerAssessment1
+
 ```
 
 ### Loading and preprocessing the data
@@ -69,6 +71,8 @@ the dataset.
 
 ```{r "Histogram of daily steps"}
 
+if( "ggplot2" %in% installed.packages() == FALSE){ install.packages("ggplot2", dependencies = TRUE)}
+require( ggplot2 )
 qplot( stepsPerDay$steps , geom = "histogram" , bins = 30 , xlab = "Steps per Day" )
 
 ```
@@ -79,7 +83,8 @@ qplot( stepsPerDay$steps , geom = "histogram" , bins = 30 , xlab = "Steps per Da
 
 meanSteps <- mean( stepsPerDay$steps )
 medianSteps <- median( stepsPerDay$steps )
-paste( "The Mean is " , meanSteps , " steps; and the median is " , medianSteps , "." , sep = "" )
+paste( "The Mean is " , round(meanSteps,2) , " steps; and the median is " , medianSteps , 
+       "." , sep = "" )
 
 ```
 
@@ -93,16 +98,18 @@ stepsPerInterval <- aggregate(steps ~ interval ,
                               data = activity ,
                               FUN = mean ,
                               na.rm = TRUE)
-#stepsPerInterval$inverval <- as.factor(stepsPerInterval$interval)
-
+most <- stepsPerInterval[ which.max(stepsPerInterval$steps) , ]
+tag <- paste("Max steps per interval = ", round(most$steps,2), sep="")
 qplot(
     interval ,
     steps ,
     data = stepsPerInterval ,
     geom = "line" ,
     xlab = "5-minute interval" ,
-    ylab = "Average steps"
-) + geom_vline( xintercept = 835 , color = "red" ) 
+    ylab = "Average steps" ,
+    main = "Average daily activity pattern"
+) + geom_vline( xintercept = 835 , color = "red" ) +
+    annotate( "text" , x = 1450 , y = 187.5 , label = tag , col = "red" )
 
 
 ```
@@ -111,8 +118,7 @@ qplot(
 
 ```{r Highest average steps per interval}
 
-most <- stepsPerInterval[ which.max(stepsPerInterval$steps) , ]
-print( paste( "The highest average number of steps is " , eval(most$steps) , 
+print( paste( "The highest average number of steps is " , round(most$steps,2) , 
        ", occuring at interval " , eval(most$interval) , "." , sep = ""))
 
 ```
@@ -204,7 +210,7 @@ Replacing missing values with a simple average can artificially inflate measurem
 .  
 .  
 
-# AS ABOVE NOT BELOW
+# AS ABOVE NOT YET BELOW
 
 ## Assignment
 
